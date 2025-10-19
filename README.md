@@ -33,37 +33,8 @@ JWT 認証、Docker、ElasticBeanstalk(java),ECR(Dockerイメージプッシュ�
 - フロントは API を呼び出してデータを取得・表示  
 - 認証は JWT トークンを `Authorization: Bearer <token>` ヘッダで送信  
 - バックエンドはステートレスに設計   
-flowchart TD
-    %% Direction
-    %% TD = Top -> Down
-    %% === Clients ===
-    A[ユーザー<br/>Browser] --> CF[(CloudFront)]
+<img width="1536" height="1024" alt="AWSpicture" src="https://github.com/user-attachments/assets/5a86db87-487e-4201-957c-03a3cd38a772" />
 
-    %% === CloudFront Origins ===
-    subgraph Origins
-      S3[(S3<br/>React静的ホスティング)]
-      EB[(Elastic Beanstalk<br/>Spring Boot / Docker)]
-    end
-
-    CF -- 静的配信 --> S3
-    CF -- /api など --> EB
-
-    %% === App Tier ===
-    EB --> RDS[(Amazon RDS<br/>PostgreSQL)]
-
-    %% === Image Build/Deploy ===
-    subgraph Build & Image
-      ECR[(Amazon ECR<br/>Dockerイメージ)]
-    end
-
-    ECR -. イメージpull .-> EB
-
-    %% === Notes ===
-    classDef svc fill:#f3f7ff,stroke:#5b7,stroke-width:1px,color:#111;
-    classDef edge stroke:#999,color:#333;
-    class CF,S3,EB,RDS,ECR svc;
-
----
 
 ## ER図
 
