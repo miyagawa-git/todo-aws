@@ -33,7 +33,7 @@ JWT 認証、Docker、ElasticBeanstalk(java),ECR(Dockerイメージプッシュ�
 - フロントは API を呼び出してデータを取得・表示  
 - 認証は JWT トークンを `Authorization: Bearer <token>` ヘッダで送信  
 - バックエンドはステートレスに設計   
-<img width="1536" height="1024" alt="AWSpicture" src="https://github.com/user-attachments/assets/5a86db87-487e-4201-957c-03a3cd38a772" />
+<img width="821" height="581" alt="AWS" src="https://github.com/user-attachments/assets/aaac1851-330a-42d4-b0a3-6801ccebcab1" />
 
 
 ## ER図
