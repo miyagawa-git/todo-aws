@@ -1,0 +1,354 @@
+■個人開発進め方
+① 実務っぽい小さなテーマを決める
+② “なぜこの構成なのか”を言語化しながら作る
+③ 自分にレビュー質問を投げる
+④ 上司の視点で説明し直す
+
+⭕ 良い例（実務寄り）
+
+「一覧＋検索＋登録画面を1機能として作る」
+
+「API1本を追加してフロントと繋ぐ」
+
+「既存機能を1つ写経して改修する」
+
+■TypeScript / React / Node 別「最低限の実務ライン」
+・TypeScript
+any を避ける理由を説明できる
+API用型 / UI用型を分ける意味が分かる
+「型は境界で厳しく、中は緩く」が分かる
+
+React
+再レンダリングの範囲を意識できる
+Contextは「便利」じゃなく「重い」ことを知っている
+onChange / onSubmit の役割を説明できる
+
+Node
+Controller は薄く、Service に判断を書く
+DBは直接触らず Repository 経由
+「この処理は同期？非同期？」を意識できる
+
+自分に向かって説明（口でも文章でも）
+
+「このコンポーネントは
+入力の状態管理だけを持っていて、
+API呼び出しは service に分けています」
+
+言葉に詰まるところ＝
+実務で詰まるところ。
+❓ この state、Context に入れる必要ある？
+
+❓ この処理、onChange でやるべき？
+❓ 型は「守るため」か「楽するため」か？
+❓ このファイル、責務2つ持ってない？
+
+「この個人開発を実務レビューしてください」
+
+「このコードで上司にどう説明するか台本作って」
+
+「この理解で現場だとどこ突っ込まれる？」
+
+==================================================================================
+■Render＊Vercelデプロイ手順
+◆Java React デプロイ指南
+バックエンド=Render（Dockerfileでデプロイ）／フロント=Vercel の最短～実務的な手順
+Manual Deploy ▸ Clear build cache & deploy
+　→ ビルドキャッシュも消してフル再ビルド（Dockerfile を直したときはこれがおすすめ）
+　
+　https://todo-java-react.onrender.com/v3/api-docs
+https://todo-java-react.onrender.com/swagger-ui/index.html
+https://todo-java-react.vercel.app/
+
+
+    { "source": "/api/(.*)", "destination": "https://todo-java-react.onrender.com/$1" },
+test1
+Test1234
+todo,Todo0915
+■課題
+□Dockerでgradlew使えない
+□React_App.tsx使ってないの問題ないのか
+Docker修正：gradlew の Permission denied を防ぐため Dockerfile に chmod を追加
+hdWWu2aJZFVy0laBtdB46WTw3X5ecIVkie7xszemv10=
+□DB接続URLにUSER：Password@はいらない
+jdbc:postgresql://tododb_nl4r_user:rEohuKPA8V6m6H8a6passk8jgnX6Hjub@dpg-d3381u6mcj7s73a56p30-a.oregon-postgres.render.com/tododb_nl4r?sslmode=require
+面談時対策（面談時の質問と解答例）
+https://zenn.dev/takaya314/articles/85e517190d16c8
+ChatGPT APIを使った個人開発のススメ
+https://zenn.dev/kazuwombat/articles/5617468b97fa3f
+Reactの技術質問！！これで面接を圧倒すべし！
+https://zenn.dev/abeshi/articles/bb9c3b1f24719c
+Reactチュートリアル2：レビューサイトを作ろう
+https://zenn.dev/likr/articles/react-with-heroku
+Reactチュートリアル1：犬画像ギャラリーを作ろう
+https://zenn.dev/likr/articles/6be53ca64f29aa035f07
+
+■React とは
+React は JavaScript でユーザーインタフェースを構築するためのライブラリです。実用的な Web アプリケーションでは、ユーザーの操作やサーバーとの通信結果に応じてユーザーインタフェース、すなわち HTML を動的に組み換えていかなければいけません。
+
+ユーザーの操作やサーバーとの通信はアプリケーションの状態を更新します。アプリケーションの状態とは、例えば以下のようなものがあります。
+
+SNS サイトのタイムライン
+EC サイトにおけるショッピングカートの内容
+ボードゲームの盤面
+React はアプリケーションの状態からユーザーインタフェースを組み立てる方法と、アプリケーションの状態を更新するための仕組みを提供してくれます。React を利用することで、ユーザーインタラクションを含んだ複雑なユーザーインタフェースを構築することが簡単になります。
+
+■フック(Hook）とは
+状態管理などのReactの機能を、クラスを書かずに使えるようになる機能（関数コンポーネント）
+
+
+■コンポーネント
+src/App.jsx では、App という関数を定義しています。
+React では、JSX を返すような関数を特別に コンポーネント と呼びます。
+コンポーネントは、アプリケーションの構成部品であり、状態管理の単位となります。
+コンポーネントは、アプリケーションの状態から JSX 式を組み立てて、その結果を HTML としてレンダリングします。
+
+・制御コンポーネント
+フォームの入力値を「Reactの状態（state）」で管理
+常に値にアクセスできるため、 ユーザが入力中にバリデーションを実施する 、リアクティブなフォームを作成
+入力値が更新されるたびに 再レンダリング（入力→onChange→setState→再レンダリング
+React.ChangeEvent<HTMLInputElement>
+ const [inputValue, setInputValue] = useState<string>("");
+<input type="text" value={inputValue} onChange={handleChange} />
+！問題点
+・1文字入力するたびに再レンダリング
+・フォームが増えるほど重くなる
+・大規模フォームでパフォーマンス低下
+
+・非制御コンポーネント
+フォームの入力値を「Reactの状態（state）」ではなく
+「ブラウザのDOM」に任せて扱うコンポーネント
+<input> の中身は DOMが勝手に管理
+React は入力のたびに再レンダリングしない
+ボタンを押した瞬間に
+👉 DOMから値を直接取得
+
+■Reactの大原則（超重要）
+JSXでのイベントハンドラは
+「実行結果」ではなく「関数そのもの」を渡す
+
+■ReactHookForm
+非制御寄りコンポーネント
+入力値は DOM に持たせる（＝非制御）
+React は「必要なときだけ」値を参照する
+だから、高速、再レンダリングが少ない、大規模フォームに強い
+
+■React.FC<Props>
+→関数の型、TypeScript 用の「型」Function Component
+const FuncCompo: React.FC<Props> = (props) => {
+  return <div />;
+};
+■React.FC<{ children: React.ReactNode }>
+
+「children を受け取る関数コンポーネント」
+
+★なぜ React.FC を避けるのか（理由を1行で）
+型が「暗黙」になりすぎて、コードの意図が読みにくくなるから
+
+■children とは？
+<MyComponent>
+  <p>中身</p>
+</MyComponent>
+この <p>中身</p> が children
+
+■JavaとReactの連携
+①バックエンド起動
+JSONを公開する。
+cd backend
+./gradlew bootRun 
+http://localhost:8080/v3/api-docs でJSONが見えれば、後でフロントが型生成に使える。
+② OpenAPIクライアントを生成する（フロント側）
+★バックエンドのAPI説明書（/v3/api-docsのJSON）を元に、フロントから呼び出せる“型付き関数集”を自動で作る作業
+cd frontend
+npm run gen:api
+これで バックエンドが公開している /v3/api-docs のJSON を読み取り、
+src/api/ 配下に TypeScriptのAPIクライアント（型付き関数群）を自動生成します。
+〇バックエンド側（Spring Boot + Springdoc）
+/v3/api-docs で API仕様書(JSON) を公開
+（例：エンドポイント、リクエスト形式、レスポンス型の一覧）
+
+〇フロント側（npm run gen:api）
+openapi-typescript-codegen や openapi-generator-cli がそのJSONを読み込む
+仕様に沿った TypeScriptの関数と型定義 を src/api/ に自動生成する
+
+〇Reactコードで使うとこうなる
+import { TodosService } from "../api"; // 自動生成された関数群
+
+async function loadTodos() {
+  const todos = await TodosService.getApiTodos(); // GET /api/todos
+  console.log(todos); // 型付きで返るので補完も効く
+}
+→これをやるメリット！！
+◆型安全
+→ APIレスポンスの構造ミスやキー名の打ち間違いをコンパイル時に検出
+◆自動補完が効く
+→ IDEで引数名・型・レスポンス型が全部出てくる
+◆仕様変更に強い
+→ バックエンドでAPI変更があれば npm run gen:api で即反映
+
+
+③ フロントを起動する（開発サーバ）
+npm run dev   # http://localhost:5173
+Viteの開発サーバが立ち上がり、http://localhost:5173 でフロントが見られます。
+
+小さな補足・注意点
+①の前提
+http://localhost:8080/swagger-ui も開けるとベター（APIテストに便利）。
+セキュリティ設定で /v3/api-docs/** と /swagger-ui/** は permitAll() にしておく。
+CORS で http://localhost:5173 を許可（フロントから叩けるように）。
+
+②の前提
+バックエンドが起動中でないと gen:api は失敗します。
+APIを変更したら 毎回 npm run gen:api で再生成（型を最新に保つ）。
+→「APIを変更したら毎回再生成」の意味
+例：バックエンドの /api/todos のレスポンスに priority フィールドを追加
+/v3/api-docs のJSONも更新される
+フロントがそれを認識できるように 再生成（npm run gen:api） が必要
+
+そうしないと、フロント側では priority の型情報や補完が反映されない
+生成クライアントに認証ヘッダ（Authorization: Bearer ...）を付与する設定（axios インターセプタ or 生成物の HttpClient 設定）を忘れずに。
+
+③の前提
+フロント側の API ベースURL（例：http://localhost:8080）が合っているか確認。
+401 が出たら：ログインで token 保存→リクエストに自動付与されているかをチェック。
+Windows なら ①は gradlew.bat bootRun。
+最終チェックリスト
+./gradlew bootRun → :8080/v3/api-docs が見える
+
+npm run gen:api → src/api/ に生成物が出る
+
+npm run dev → :5173 で表示、ログイン→ToDo CRUD 動く
+
+■Swagger UI
+http://localhost:8080/swagger-ui は Swagger UI というツールで、
+バックエンドの API をブラウザ上から視覚的にテストできるページです。
+→
+★具体的にできること
+・エンドポイント一覧表示
+/auth/login や /api/todos など、バックエンドが持っている API が全部見える
+・リクエスト内容をGUI入力
+例えば「POST /auth/login」に username と password をフォームで入力
+・レスポンスをその場で確認
+送信ボタンを押すと、サーバーからのレスポンス（JSON）やHTTPステータスが下に表示される
+・認証付きAPIもテスト可能
+右上の「Authorize」にJWTを入力して、保護されたAPIも叩ける
+
+■バックエンド
+おすすめ手順（最短で“動く”まで）
+DB準備
+　PostgreSQLのDB/ユーザー作成（todoapp / todo:todo など）。
+
+最小APIを作る
+　- /auth/login（JWT発行）
+　- /api/todos（GETだけでもOK。まずはダミー返却でも可）
+
+起動してSwaggerでテスト
+
+bash
+コピーする
+編集する
+cd backend
+./gradlew bootRun
+# → http://localhost:8080/swagger-ui
+　- POST /auth/login に demo/pass を入れて実行 → tokenが出るか確認
+　- 右上「Authorize」で Bearer <token> を設定
+　- GET /api/todos を実行 → 401が出ずにJSONが返るか確認
+
+保護ルート/認可の詰め
+　- JWT期限切れ時の挙動、未認証→401になるか
+　- CORS設定で http://localhost:5173 を許可（後でフロントから叩くため）
+
+OpenAPI確認
+　http://localhost:8080/v3/api-docs に仕様JSONが出ているか（後でフロントの型生成に使う）
+
+Swaggerでの具体的テスト手順
+画面右上「Authorize」→ Bearer <さっきのtoken> を貼る→Authorize
+
+GET /api/todos → Execute（ヘッダに自動でAuthorizationが付く）
+
+POST /api/todos → BodyをGUIで入力→Execute（201/200が返るか）
+
+つまずきポイント
+401が出る：Authorizeに正しいBearer <token>を入れているか／SecurityConfigのpermitAllに/auth/**や/v3/api-docs/**があるか
+
+CORS：http://localhost:5173 を許可（今はSwaggerなので問題ないが、後で必要）
+
+DB接続エラー：application.ymlのURL/ユーザー/パスを再確認
+
+
+8/11
+■A.（最短）DBなしで最小APIを動かす
+./gradlew bootRun → http://localhost:8080/swagger-ui
+POST /auth/login に demo / pass → tokenを取得
+右上「Authorize」→ Bearer <token> を入力
+GET /api/todos 等を実行（200で返ればOK）
+8/12
+□B.（本番寄せ）PostgreSQL＋MyBatis に置き換える
+8/13
+■バックエンド、完成形
+8/14
+■バックエンド完成
+■OpenAPIクライアントを生成
+□フロント、main.tsxまで
+
+■JavaとReactの連携の概要は以下で合っていますか。
+①バックエンド起動
+JSONを公開する。
+cd backend
+./gradlew bootRun 
+http://localhost:8080/v3/api-docs でJSONが見えれば、後でフロントが型生成に使える。
+② OpenAPIクライアントを生成する（フロント側）
+
+■4.1★？？初期化
+cd frontend
+npm create vite@latest . -- --template react-ts
+#アプリ開発でよく使うライブラリ群をまとめてインストール
+npm i react-router-dom @tanstack/react-query @tanstack/react-query-devtools react-hook-form zod axios
+#開発用依存として OpenAPI 仕様から型付きの TypeScript API クライアントを自動生成するツールを入れる。
+#バックエンド（Spring Boot）が提供する /v3/api-docs を元に、src/api/ に TypeScript の関数や型を生成し、API呼び出しを安全＆楽に行えるようにする
+npm i -D openapi-typescript-codegen
+
+■4.2＿OpenAPI 仕様から型付きの TypeScript API クライアントを自動生成
+package.jsonに/v3/api-docsのscriptを追加し、以下実行
+npm run gen:api（openapi-typescript-codegen というツールを使って、APIクライアントコードを自動生成する）
+→バックエンドにアクセスして、OpenAPI JSON を解析、TypeScriptコードを自動生成
+
+事前に以下が整っている前提です（前の手順書どおりならOK）：
+
+■4.3_Axios インスタンス & 認証
+
+main.tsxまで
+
+③ フロントを起動する（開発サーバ）
+npm run dev   # http://localhost:5173
+Viteの開発サーバが立ち上がり、http://localhost:5173 でフロントが見られます。
+
+以下よくわからず、イメージがつきません
+② OpenAPIクライアントを生成する（フロント側）
+ バックエンドが公開している /v3/api-docs のJSON を読み取り、
+src/api/ 配下に TypeScriptのAPIクライアント（型付き関数群）を自動生成します。
+APIを変更したら 毎回 npm run gen:api で再生成（型を最新に保つ）。
+
+http://localhost:8081/swagger-ui/index.html
+http://localhost:8081/v3/api-docs
+
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+■Tailwind v4 を入れる（Vite プラグイン方式）
+npm i -D tailwindcss @tailwindcss/vite
+・vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+・@import "tailwindcss";
+
+
+npx shadcn@latest add button input dialog dropdown-menu badge
+npx shadcn@latest add toast
+npx shadcn@latest add sonner
+
+
+●flex コンテナの中では text-align は効かず、子要素の位置決めは justify-content や margin で行います。
