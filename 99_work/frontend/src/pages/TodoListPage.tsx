@@ -19,6 +19,8 @@ import Oya
 
 import RHF from "../components/RHF";
 
+import MultiSelects from "../components/Select";
+
 export const TodoListPage: React.FC = () => {
   const { todos, loading, addTodo } = useTodos();
   const [title, setTitle] = useState("");
@@ -48,6 +50,8 @@ export const TodoListPage: React.FC = () => {
       <Typography variant="h5" sx={{ mt: 2, mb: 2 }}>
         Todo List
       </Typography>
+      セレクトボックス
+      <MultiSelects></MultiSelects>
 クラスコンポーネント
       <ClassCompo></ClassCompo><br/>
       <Oya></Oya><br/>
