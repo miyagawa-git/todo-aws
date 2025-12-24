@@ -1,0 +1,131 @@
+変換手順（useStateフォーム → React Hook Form）
+STEP 0 変換対象の棚卸し
+	標準版のフォーム処理はこの5ブロックに分かれる：
+	初期値：initialValues(useMemo)
+	フォーム状態：form(useState)
+	エラー状態：errors(useState)
+	入力ハンドラ：handleChange
+	送信ハンドラ：handleSubmit（validate→add→reset）
+	RHF化は、2〜5 を RHFの useForm に置き換えるのが本質。
+STEP 1 useStateフォーム状態を削除し、useForm を導入
+Before（標準）
+	const [form, setForm] = useState<TodoFormValues>(initialValues);
+	const [errors, setErrors] = useState<TodoFormErrors>({});
+After（RHF）
+	const { control, register, handleSubmit, formState: { isSubmitting }, reset } =
+	  useForm<TodoFormValues>({
+	    mode: "onSubmit",
+	    defaultValues,
+	  });
+ポイント
+	form / setForm / errors / setErrors が消える
+	以降「入力値」は RHF が内部で保持
+STEP 2 validate関数と入力中バリデーションを、register/Controller のルールへ移す
+Before（標準）
+	const validate = (values: TodoFormValues): TodoFormErrors => {
+	  const newErrors: TodoFormErrors = {};
+	  if (!values.title.trim()) newErrors.title = "タイトルは必須です";
+	  return newErrors;
+	};
+After（RHF）
+	最小はこれ（requiredで置換）：
+	<TextField
+	  {...register("title", { required: "タイトルは必須です" })}
+	/>
+ポイント
+	標準版の「validate + setErrors(validate(nextForm))」の仕組みが不要になる
+	画面上に出すなら formState.errors から表示する（後述）
+STEP 3 handleChange を削除し、TextField を register に置き換える
+Before（標準）
+	<TextField
+	  name="title"
+	  value={form.title}
+	  onChange={handleChange}
+	/>
+After（RHF）
+	<TextField
+	  fullWidth
+	  size="small"
+	  label="Todo title"
+	  {...register("title")}
+	/>
+置換ルール
+	name/value/onChange を丸ごと削除
+	register("title") をスプレッドするだけ
+STEP 4 Switch（boolean）は Controller で繋ぐ（安定）
+Before（標準）
+	<Switch
+	  name="done"
+	  checked={form.done}
+	  onChange={handleChange}
+	/>
+After（RHF）
+	<Controller
+	  name="done"
+	  control={control}
+	  render={({ field }) => (
+	    <FormControlLabel
+	      label="done"
+	      control={
+	        <Switch
+	          checked={field.value}
+	          onChange={(_, checked) => field.onChange(checked)}
+	        />
+	      }
+	    />
+	  )}
+	/>
+なぜ Controller？（資料向け要点）
+	Switch は checked を扱うコンポで、value/event形が TextField と違う
+	RHFでは boolean/UI部品は Controller のほうが事故りにくい（型・挙動が安定）
+STEP 5 handleSubmit を RHF の handleSubmit(onSubmit) に置換
+Before（標準）
+	const handleSubmit = (e: React.FormEvent) => {
+	  e.preventDefault();
+	  const validationErrors = validate(form);
+	  setErrors(validationErrors);
+	  if (Object.keys(validationErrors).length > 0) return;
+	  addTodo(form);
+	  setForm(initialValues);
+	  setErrors({});
+	};
+After（RHF）
+	const onSubmit = async (values: TodoFormValues) => {
+	  if (!values.title.trim()) return; // ルールでやるなら不要
+	  await addTodo(values);
+	  reset({ title: "", done: false });
+	};
+JSX側はこう置換：
+	<Box component="form" onSubmit={handleSubmit(onSubmit)}>
+置換ルール
+	e.preventDefault() は不要（RHFがやる）
+	validate → setErrors は不要（RHFの validation）
+	setForm の代わりに reset を使う
+STEP 6 エラー表示（標準 errors.title → RHF formState.errors）
+	あなたのRHF版には「エラー表示」がまだ入ってないので、資料にはここも入れると比較が綺麗。
+Before（標準）
+	{errors.title && <p style={{ color: "red" }}>{errors.title}</p>}
+After（RHF）
+	const { formState: { errors } } = useForm<...>();
+	<TextField
+	  {...register("title", { required: "タイトルは必須です" })}
+	  error={!!errors.title}
+	  helperText={errors.title?.message}
+	/>
+STEP 7 location.state の反映（RHFなら「resetで追従」できる）
+	標準版はここが React 19 で火を吹きやすい（effectでsetState同期）。
+	RHFは 初期値追従を reset で安全にできるのが大きなメリット。
+	useEffect(() => {
+	  reset(defaultValues);
+	}, [defaultValues, reset]);
+	※「画面遷移で渡された値が変わったらフォームも更新」が要件なら、資料にこれを書く価値が高い。
+■変換の要点まとめ（資料の結論パートに使える）
+	フォーム状態管理（useState）を削除し、useForm に集約
+	入力ハンドラ(handleChange)が不要（TextFieldは register、Switchは Controller）
+	バリデーションがUIの近くに寄る（register/Controller ルール）
+	送信後の初期化が reset で統一（setForm/setErrors の複合処理が消える）
+	route初期値の再反映が reset で書ける（React 19 の effect setState 問題を回避しやすい）
+	
+必要なら、この手順をそのまま **「調査資料テンプレ（章立て）」**に整形する：
+	目的 / 対象 / 変換前後比較 / 変換STEP / メリデメ / 結論
+	って構成で、あなたのコード断片を“差分”として配置した版を作る。
