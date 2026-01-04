@@ -1,0 +1,27 @@
+STEP 1️⃣ Repository interface を作る（最初）
+	Inversify は 「interface を key にして実装を差し替える」 仕組み
+	// src/model/interfaces/repository/UserRepository.ts
+	export interface UserRepository {
+	  get(userId: string): Promise<UserEntity>;
+	}
+STEP 2️⃣ Repository 実装クラスを書く
+	interface を implements
+	@injectable() を付ける
+STEP 3️⃣ Service / Usecase を作る
+	async.get(user_id:string):Promise<APIResponse>
+	・APIResponse、画面DTO
+	・インタフェース
+
+	・実装クラス
+STEP 4️⃣ TYPES を定義する（bind の土台）
+// src/types/inversifyTypes.ts
+export const TYPES = {
+  UserRepository: Symbol.for("UserRepository"),
+  GetUserService: Symbol.for("GetUserService"),
+};
+
+STEP 5️⃣ inversify.config.ts（DIの配線）
+ーーーーー
+STEP 6️⃣ Controller から container.get する（最後）
+
+curl "http://localhost:3000/api/contractor?contractorId=1&operatorId=10"
