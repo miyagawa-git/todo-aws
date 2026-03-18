@@ -117,3 +117,36 @@ Render / Vercel による本番デプロイ設計
 環境変数の安全管理が必要
 無料枠利用環境ではコールドスタートや遅延が発生する可能性あり
 
+import * as fs from "fs";
+import * as path from "path";
+
+type InputFileInfo = {
+  columnName: string;
+  filePath: string;
+};
+
+function collectCsvFilesWithUndefined(
+  dirPath: string
+): (InputFileInfo | undefined)[] {
+  const targetFileNames = [
+    "test.csv",
+    ...Array.from({ length: 10 }, (_, i) => `param${i + 1}.csv`),
+  ];
+
+  return targetFileNames.map((fileName) => {
+    const fullPath = path.join(dirPath, fileName);
+
+    if (!fs.existsSync(fullPath)) {
+      return undefined;
+    }
+
+    return {
+      columnName: path.parse(fileName).name,
+      filePath: fullPath,
+    };
+  });
+}
+
+// 実行例
+const result = collectCsvFilesWithUndefined("./input");
+console.log(result);
