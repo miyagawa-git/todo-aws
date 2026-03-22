@@ -116,22 +116,33 @@ Render / Vercel による本番デプロイ設計
 このプロジェクトは学習目的であり、本番向けのセキュリティ対策（例えば XSS / CSRF / トークン失効など）は完全ではありません
 環境変数の安全管理が必要
 無料枠利用環境ではコールドスタートや遅延が発生する可能性あり
+async function collectCsvFilesWithUndefinedByHead(
+  bucket: string,
+  folderPrefix: string
+): Promise<(InputFileInfo | undefined)[]> {
+  const normalizedPrefix = normalizePrefix(folderPrefix);
 
-import * as fs from "fs";
-import * as path from "path";
+  // 並列でチェック（11件なら問題なし）
+  const results = await Promise.all(
+    TARGET_COLUMNS.map(async (columnName) => {
+      const key = `${normalizedPrefix}${columnName}.csv`;
 
-type InputFileInfo = {
-  columnName: string;
-  filePath: string;
-};
+      const exists = await existsObject(bucket, key);
 
-function collectCsvFilesWithUndefined(
-  dirPath: string
-): (InputFileInfo | undefined)[] {
-  const targetFileNames = [
-    "test.csv",
-    ...Array.from({ length: 10 }, (_, i) => `param${i + 1}.csv`),
-  ];
+      if (!exists) {
+        return undefined;
+      }
+
+      return {
+        columnName,
+        key,
+      };
+    })
+  );
+
+  return results;
+}
+
 
   return targetFileNames.map((fileName) => {
     const fullPath = path.join(dirPath, fileName);
